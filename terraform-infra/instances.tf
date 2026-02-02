@@ -1,7 +1,4 @@
 locals {
-  # Place instances across public subnets (AZ-A and AZ-B)
-  public_subnet_ids = [aws_subnet.public[0].id, aws_subnet.public[1].id]
-
   servers = {
     k8s-master = {
       type      = var.instance_type_k8s
@@ -35,6 +32,7 @@ locals {
     }
   }
 }
+
 
 # 6 public instances (LAB MODE)
 resource "aws_instance" "servers" {
