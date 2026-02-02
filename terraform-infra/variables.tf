@@ -35,12 +35,12 @@ variable "key_name" {
 
 variable "instance_type_tools" {
   type    = string
-  default = "t3.medium"
+  default = "t3.small"
 }
 
 variable "instance_type_k8s" {
   type    = string
-  default = "t3.medium"
+  default = "t3.small"
 }
 
 variable "bastion_instance_type" {
