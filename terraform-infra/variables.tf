@@ -35,7 +35,7 @@ variable "key_name" {
 
 variable "instance_type_tools" {
   type    = string
-  default = "t3.small"
+  default = "t3.micro"
 }
 
 variable "instance_type_k8s" {
