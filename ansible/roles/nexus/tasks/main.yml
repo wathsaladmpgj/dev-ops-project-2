@@ -11,6 +11,13 @@
     enabled: yes
     state: started
 
+# Required so community.docker works properly
+- name: Install Python Docker SDK (required by Ansible docker modules)
+  apt:
+    name: python3-docker
+    state: present
+    update_cache: yes
+
 - name: Create Nexus data dir
   file:
     path: /opt/nexus-data
@@ -20,7 +27,7 @@
 - name: Run Nexus container
   community.docker.docker_container:
     name: nexus
-    image: "sonatype/nexus3:{{ nexus_version }}"
+    image: "sonatype/nexus3:{{ nexus_version | default('3.70.1') }}"
     state: started
     restart_policy: always
     ports:

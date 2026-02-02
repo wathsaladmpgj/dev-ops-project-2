@@ -2,12 +2,16 @@
 - name: Install Nexus
   hosts: nexus
   become: true
+  vars:
+    nexus_version: "3.70.1"
   roles:
     - nexus
 
 - name: Install SonarQube
   hosts: sonarqube
   become: true
+  vars:
+    sonarqube_version: "10.5.1.90531"
   roles:
     - sonarqube
 
