@@ -2,12 +2,18 @@
 - name: Kubernetes prerequisites on all nodes
   hosts: k8s
   become: true
+  vars:
+    pod_network_cidr: "192.168.0.0/16"
+    calico_manifest_url: "https://raw.githubusercontent.com/projectcalico/calico/v3.27.3/manifests/calico.yaml"
   roles:
     - k8s_common
 
 - name: Initialize control-plane
   hosts: k8s_master
   become: true
+  vars:
+    pod_network_cidr: "192.168.0.0/16"
+    calico_manifest_url: "https://raw.githubusercontent.com/projectcalico/calico/v3.27.3/manifests/calico.yaml"
   roles:
     - k8s_master
 
