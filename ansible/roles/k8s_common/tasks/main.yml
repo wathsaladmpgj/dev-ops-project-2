@@ -34,11 +34,14 @@
   command: sysctl --system
   changed_when: false
 
-# containerd
+# -----------------------
+# containerd (runtime)
+# -----------------------
 - name: Install containerd
   apt:
     name: containerd
     state: present
+    update_cache: yes
 
 - name: Create containerd config directory
   file:
@@ -51,7 +54,7 @@
   args:
     creates: /etc/containerd/config.toml
 
-- name: Enable SystemdCgroup in containerd
+- name: Enable SystemdCgroup in containerd (required for kubelet stability)
   replace:
     path: /etc/containerd/config.toml
     regexp: 'SystemdCgroup = false'
@@ -63,8 +66,10 @@
     state: restarted
     enabled: yes
 
-# kubeadm/kubelet/kubectl
-- name: Add Kubernetes apt keyring
+# -----------------------
+# Kubernetes packages
+# -----------------------
+- name: Add Kubernetes apt keyring (v1.29 repo)
   shell: |
     mkdir -p /etc/apt/keyrings
     curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key \
@@ -72,22 +77,22 @@
   args:
     creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
-- name: Add Kubernetes apt repo
+- name: Add Kubernetes apt repo (v1.29 stable)
   copy:
     dest: /etc/apt/sources.list.d/kubernetes.list
     content: |
       deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /
 
-- name: Install kubelet kubeadm kubectl
+- name: Install kubelet kubeadm kubectl (latest from v1.29 repo)
   apt:
     update_cache: yes
     name:
-      - "kubelet={{ k8s_version_apt }}"
-      - "kubeadm={{ k8s_version_apt }}"
-      - "kubectl={{ k8s_version_apt }}"
+      - kubelet
+      - kubeadm
+      - kubectl
     state: present
 
-- name: Hold Kubernetes packages
+- name: Hold Kubernetes packages (avoid unexpected upgrades)
   dpkg_selections:
     name: "{{ item }}"
     selection: hold
