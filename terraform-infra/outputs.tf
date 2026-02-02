@@ -1,15 +1,14 @@
-output "bastion_public_ip" {
-  value       = var.create_bastion ? aws_instance.bastion[0].public_ip : null
-  description = "SSH into Bastion using this public IP"
+output "public_ips" {
+  value = { for k, inst in aws_instance.servers : k => inst.public_ip }
 }
 
 output "private_ips" {
-  value = { for k, v in aws_instance.servers : k => v.private_ip }
+  value = { for k, inst in aws_instance.servers : k => inst.private_ip }
 }
 
-output "ssh_via_bastion_examples" {
-  value = var.create_bastion ? {
-    for k, v in aws_instance.servers :
-    k => "ssh -i <KEY.pem> -J ubuntu@${aws_instance.bastion[0].public_ip} ubuntu@${v.private_ip}"
-  } : {}
+output "ssh_commands" {
+  value = {
+    for k, inst in aws_instance.servers :
+    k => "ssh -i my-project.pem ubuntu@${inst.public_ip}"
+  }
 }
