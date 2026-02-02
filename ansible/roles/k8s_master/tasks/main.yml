@@ -1,0 +1,40 @@
+---
+- name: Check if cluster already initialized
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: adminconf
+
+- name: Initialize Kubernetes control-plane
+  command: "kubeadm init --pod-network-cidr={{ pod_network_cidr }}"
+  when: not adminconf.stat.exists
+  register: init_out
+
+- name: Create kubeconfig for root
+  file:
+    path: /root/.kube
+    state: directory
+    mode: "0700"
+
+- name: Copy admin.conf to root kubeconfig
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+    remote_src: true
+    mode: "0600"
+
+- name: Install Calico CNI
+  command: "kubectl apply -f {{ calico_manifest_url }}"
+  environment:
+    KUBECONFIG: /root/.kube/config
+  register: calico_apply
+  changed_when: "'created' in calico_apply.stdout or 'configured' in calico_apply.stdout"
+
+- name: Create worker join command
+  command: kubeadm token create --print-join-command
+  register: join_cmd
+  changed_when: false
+
+- name: Expose join command to other hosts
+  set_fact:
+    k8s_join_command: "{{ join_cmd.stdout }}"
+  changed_when: false

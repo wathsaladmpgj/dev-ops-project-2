@@ -1,0 +1,41 @@
+---
+- name: Install docker
+  apt:
+    name: docker.io
+    state: present
+    update_cache: yes
+
+- name: Enable docker
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
+
+- name: Set vm.max_map_count for SonarQube
+  sysctl:
+    name: vm.max_map_count
+    value: "262144"
+    state: present
+    reload: yes
+
+- name: Create SonarQube volumes
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - /opt/sonar/data
+    - /opt/sonar/extensions
+    - /opt/sonar/logs
+
+- name: Run SonarQube container
+  community.docker.docker_container:
+    name: sonarqube
+    image: "sonarqube:{{ sonarqube_version }}"
+    state: started
+    restart_policy: always
+    ports:
+      - "9000:9000"
+    volumes:
+      - "/opt/sonar/data:/opt/sonarqube/data"
+      - "/opt/sonar/extensions:/opt/sonarqube/extensions"
+      - "/opt/sonar/logs:/opt/sonarqube/logs"

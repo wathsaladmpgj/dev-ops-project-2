@@ -1,0 +1,51 @@
+---
+- name: Install docker
+  apt:
+    name: docker.io
+    state: present
+    update_cache: yes
+
+- name: Enable docker
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
+
+- name: Create monitoring directories
+  file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - /opt/monitoring
+    - /opt/monitoring/prometheus
+
+- name: Write Prometheus config (basic)
+  copy:
+    dest: /opt/monitoring/prometheus/prometheus.yml
+    content: |
+      global:
+        scrape_interval: 15s
+      scrape_configs:
+        - job_name: 'prometheus'
+          static_configs:
+            - targets: ['localhost:9090']
+
+- name: Run Prometheus container
+  community.docker.docker_container:
+    name: prometheus
+    image: prom/prometheus:latest
+    state: started
+    restart_policy: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - "/opt/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+
+- name: Run Grafana container
+  community.docker.docker_container:
+    name: grafana
+    image: grafana/grafana:latest
+    state: started
+    restart_policy: always
+    ports:
+      - "3000:3000"

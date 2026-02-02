@@ -1,0 +1,6 @@
+---
+- name: Common base setup
+  hosts: k8s:tools
+  become: true
+  roles:
+    - common

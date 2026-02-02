@@ -1,0 +1,13 @@
+# Kubernetes versions (pin for stability)
+k8s_version_apt: "1.29.0-1.1"   # example; keep consistent across nodes
+pod_network_cidr: "192.168.0.0/16"
+
+# Container runtime
+container_runtime: "containerd"
+
+# Calico manifest (version pinned)
+calico_manifest_url: "https://raw.githubusercontent.com/projectcalico/calico/v3.27.3/manifests/calico.yaml"
+
+# Tools
+nexus_version: "3.70.1"
+sonarqube_version: "10.5.1.90531"
