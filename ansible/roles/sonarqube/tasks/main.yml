@@ -30,7 +30,7 @@
 - name: Run SonarQube container
   community.docker.docker_container:
     name: sonarqube
-    image: "sonarqube:{{ sonarqube_version }}"
+    image: "sonarqube:{{ sonarqube_image_tag | default('lts-community') }}"
     state: started
     restart_policy: always
     ports:

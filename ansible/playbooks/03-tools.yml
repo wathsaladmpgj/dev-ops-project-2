@@ -11,7 +11,7 @@
   hosts: sonarqube
   become: true
   vars:
-    sonarqube_version: "10.5.1.90531"
+    sonarqube_image_tag: "lts-community"
   roles:
     - sonarqube
 
