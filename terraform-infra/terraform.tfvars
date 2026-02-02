@@ -8,7 +8,7 @@ admin_cidr = "0.0.0.0/0"
 key_name = "my-project"
 
 # LAB sizes (reduce if you still hit vCPU limits)
-instance_type_k8s   = "t3.micro"
+instance_type_k8s   = "c7i-flex.large"
 instance_type_tools = "t3.micro"
 root_volume_gb      = 30
 
