@@ -9,7 +9,7 @@ key_name = "my-project"
 
 # LAB sizes (reduce if you still hit vCPU limits)
 instance_type_k8s   = "c7i-flex.large"
-instance_type_tools = "t3.micro"
+instance_type_tools = "t3.small"
 root_volume_gb      = 30
 
 # If you hit VPC limit again:
