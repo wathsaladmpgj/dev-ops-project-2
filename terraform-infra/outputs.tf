@@ -12,3 +12,11 @@ output "ssh_commands" {
     k => "ssh -i my-project.pem ubuntu@${inst.public_ip}"
   }
 }
+
+output "sonarqube_public_ip" {
+  value = aws_instance.servers["sonarqube"].public_ip
+}
+
+output "sonarqube_url" {
+  value = "http://${aws_instance.servers["sonarqube"].public_ip}:9000"
+}
