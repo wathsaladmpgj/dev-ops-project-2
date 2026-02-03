@@ -1,16 +1,19 @@
 ---
-- name: Install docker
+- name: Install Docker
   apt:
-    name: docker.io
+    name:
+      - docker.io
+      - python3-docker
     state: present
     update_cache: yes
 
-- name: Enable docker
+- name: Enable and start Docker
   systemd:
     name: docker
     enabled: yes
     state: started
 
+# REQUIRED for Elasticsearch
 - name: Set vm.max_map_count for SonarQube
   sysctl:
     name: vm.max_map_count
@@ -18,24 +21,32 @@
     state: present
     reload: yes
 
-- name: Create SonarQube volumes
+# Create directories with correct ownership
+- name: Create SonarQube directories
   file:
     path: "{{ item }}"
     state: directory
+    owner: "1000"
+    group: "1000"
+    mode: "0775"
   loop:
     - /opt/sonar/data
     - /opt/sonar/extensions
     - /opt/sonar/logs
 
+# Run container with REQUIRED ulimits
 - name: Run SonarQube container
   community.docker.docker_container:
     name: sonarqube
     image: "sonarqube:{{ sonarqube_image_tag | default('lts-community') }}"
     state: started
     restart_policy: always
-    ports:
+    published_ports:
       - "9000:9000"
     volumes:
       - "/opt/sonar/data:/opt/sonarqube/data"
       - "/opt/sonar/extensions:/opt/sonarqube/extensions"
       - "/opt/sonar/logs:/opt/sonarqube/logs"
+    ulimits:
+      - nofile:65536:65536
+      - nproc:4096:4096
