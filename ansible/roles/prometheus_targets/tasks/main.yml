@@ -1,0 +1,9 @@
+---
+- name: Install Prometheus config for node_exporter targets
+  template:
+    src: prometheus.yml.j2
+    dest: /etc/prometheus/prometheus.yml
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart prometheus

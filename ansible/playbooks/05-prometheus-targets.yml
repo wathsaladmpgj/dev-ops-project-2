@@ -1,0 +1,6 @@
+---
+- name: Update Prometheus scrape targets (node_exporter)
+  hosts: monitoring
+  become: yes
+  roles:
+    - prometheus_targets
