@@ -30,10 +30,17 @@ output "nexus_private_ip" {
 }
 
 output "k8s_master_public_ip" {
-  value = aws_instance.servers["k8s-master"].public_ip
+  value = one([
+    for k, inst in aws_instance.servers :
+    inst.public_ip if inst.tags["Role"] == "k8s-master"
+  ])
 }
 
 output "k8s_master_private_ip" {
-  value = aws_instance.servers["k8s-master"].private_ip
+  value = one([
+    for k, inst in aws_instance.servers :
+    inst.private_ip if inst.tags["Role"] == "k8s-master"
+  ])
 }
+
 
