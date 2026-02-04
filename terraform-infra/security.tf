@@ -80,5 +80,33 @@ resource "aws_security_group" "lab_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+    # HTTP (Ingress / apps)
+  ingress {
+    description = "HTTP 80"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [var.admin_cidr]
+  }
+
+  # HTTPS (Ingress / apps)
+  ingress {
+    description = "HTTPS 443"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.admin_cidr]
+  }
+
+  # Prometheus Node Exporter (from Prometheus server only)
+  ingress {
+    description = "Node Exporter 9100"
+    from_port   = 9100
+    to_port     = 9100
+    protocol    = "tcp"
+    cidr_blocks = [var.admin_cidr]
+  }
+
+
   tags = { Name = "${var.project_name}-lab-sg" }
 }
