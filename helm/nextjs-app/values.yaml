@@ -1,0 +1,15 @@
+replicaCount: 2
+
+image:
+  repository: docker.io/janith9988/nextjs-app
+  tag: "latest"
+  pullPolicy: Always
+
+service:
+  type: NodePort      # later you can change to ClusterIP + Ingress
+  port: 3000
+  nodePort: null      # set to 30080 if you want a fixed port
+
+containerPort: 3000
+
+resources: {}

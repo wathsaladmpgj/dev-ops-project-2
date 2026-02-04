@@ -29,4 +29,11 @@ output "nexus_private_ip" {
   value = aws_instance.servers["nexus"].private_ip
 }
 
+output "k8s_master_public_ip" {
+  value = aws_instance.servers["k8s-master"].public_ip
+}
+
+output "k8s_master_private_ip" {
+  value = aws_instance.servers["k8s-master"].private_ip
+}
 
