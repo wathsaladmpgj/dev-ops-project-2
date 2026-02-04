@@ -6,10 +6,15 @@ image:
   pullPolicy: Always
 
 service:
-  type: NodePort      # later you can change to ClusterIP + Ingress
+  type: ClusterIP
   port: 3000
-  nodePort: null      # set to 30080 if you want a fixed port
 
 containerPort: 3000
+
+ingress:
+  enabled: true
+  className: nginx
+  host: nextjs.local
+  path: /
 
 resources: {}
