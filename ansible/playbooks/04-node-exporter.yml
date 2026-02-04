@@ -1,0 +1,7 @@
+---
+- name: Install node_exporter on k8s + sonarqube + nexus
+  hosts: node_exporter
+  become: yes
+  roles:
+    - role: node_exporter
+      node_exporter_version: "1.8.2"
