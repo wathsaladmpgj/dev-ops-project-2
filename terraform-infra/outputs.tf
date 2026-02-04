@@ -20,3 +20,11 @@ output "sonarqube_public_ip" {
 output "sonarqube_url" {
   value = "http://${aws_instance.servers["sonarqube"].public_ip}:9000"
 }
+
+output "nexus_public_url" {
+  value = "http://${aws_instance.nexus.public_ip}:8081"
+}
+
+output "nexus_private_ip" {
+  value = aws_instance.nexus.private_ip
+}
