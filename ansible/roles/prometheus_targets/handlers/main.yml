@@ -1,6 +1,16 @@
 ---
-- name: Restart prometheus
+- name: Restart prometheus (systemd if available)
+  become: true
   systemd:
     name: prometheus
     state: restarted
-    enabled: yes
+  register: prom_systemd
+  failed_when: false
+
+- name: Restart prometheus (docker fallback)
+  become: true
+  community.docker.docker_container:
+    name: prometheus
+    state: started
+    restart: true
+  when: prom_systemd is failed
