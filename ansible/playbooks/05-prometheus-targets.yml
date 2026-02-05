@@ -1,6 +1,9 @@
----
-- name: Update Prometheus scrape targets (node_exporter)
-  hosts: monitoring
-  become: yes
+- hosts: monitoring
+  become: true
+  vars:
+    prometheus_targets:
+      node_exporter:
+        - "jenkins:9100"
+        - "sonarqube:9100"
   roles:
     - prometheus_targets
