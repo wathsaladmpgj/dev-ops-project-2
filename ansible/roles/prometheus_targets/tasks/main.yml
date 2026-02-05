@@ -1,5 +1,15 @@
 ---
+- name: Ensure /etc/prometheus exists
+  become: true
+  file:
+    path: /etc/prometheus
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
 - name: Install Prometheus config for node_exporter targets
+  become: true
   template:
     src: prometheus.yml.j2
     dest: /etc/prometheus/prometheus.yml
