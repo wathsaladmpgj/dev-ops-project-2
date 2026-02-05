@@ -1,0 +1,8 @@
+prometheus_targets:
+  node_exporter:
+    - "jenkins:9100"
+    - "sonarqube:9100"
+    - "nexus:9100"
+    - "k8s-master:9100"
+    - "k8s-worker-1:9100"
+    - "k8s-worker-2:9100"
