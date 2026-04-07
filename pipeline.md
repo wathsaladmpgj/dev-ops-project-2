@@ -124,23 +124,23 @@ pipeline {
     // Get K8s master IP (only if deploying)
     // -------------------------
     stage('Get K8s Master IP') {
-  when { expression { params.ACTION == 'apply' && !params.SKIP_DEPLOY && !params.SKIP_TERRAFORM } }
-  steps {
-    script {
-      env.K8S_MASTER_IP = sh(
-        script: "cd ${TF_DIR} && terraform output -raw k8s_master_public_ip",
-        returnStdout: true
-      ).trim()
+      when { expression { params.ACTION == 'apply' && !params.SKIP_DEPLOY && !params.SKIP_TERRAFORM } }
+      steps {
+        script {
+          env.K8S_MASTER_IP = sh(
+            script: "cd ${TF_DIR} && terraform output -raw k8s_master_public_ip",
+            returnStdout: true
+          ).trim()
 
-      if (!env.K8S_MASTER_IP) {
-        error("K8S_MASTER_IP is empty. Check Terraform state/outputs.")
+          if (!env.K8S_MASTER_IP) {
+            error("K8S_MASTER_IP is empty. Check Terraform state/outputs.")
+          }
+
+          echo "K8s Master IP: ${env.K8S_MASTER_IP}"
+        }
       }
-
-      echo "K8s Master IP: ${env.K8S_MASTER_IP}"
     }
-  }
-}
-
+ 
 
     // -------------------------
     // Decide if Ansible should run
@@ -216,41 +216,41 @@ pipeline {
 
     //////////////////////////
     stage('Install Node Exporter (All Servers)') {
-  when { expression { params.ACTION == 'apply' && env.DO_ANSIBLE == 'true' } }
-  steps {
-    withCredentials([sshUserPrivateKey(
-      credentialsId: 'ec2-ssh-key',
-      keyFileVariable: 'SSH_KEY',
-      usernameVariable: 'SSH_USER'
-    )]) {
-      sh """
-        set -e
-        cd ${ANS_DIR}
-        export ANSIBLE_HOST_KEY_CHECKING=False
-        ansible-playbook -i inventories/hosts.ini playbooks/04-node-exporter.yml --private-key \$SSH_KEY -u \$SSH_USER
-      """
+      when { expression { params.ACTION == 'apply' && env.DO_ANSIBLE == 'true' } }
+      steps {
+        withCredentials([sshUserPrivateKey(
+          credentialsId: 'ec2-ssh-key',
+          keyFileVariable: 'SSH_KEY',
+          usernameVariable: 'SSH_USER'
+        )]) {
+        sh """
+          set -e
+          cd ${ANS_DIR}
+          export ANSIBLE_HOST_KEY_CHECKING=False
+          ansible-playbook -i inventories/hosts.ini playbooks/04-node-exporter.yml --private-key \$SSH_KEY   -u \$SSH_USER
+        """
+        }
+      }
     }
-  }
-}
 
-//////////////////////////////
-stage('Update Prometheus Targets') {
-  when { expression { params.ACTION == 'apply' && env.DO_ANSIBLE == 'true' } }
-  steps {
-    withCredentials([sshUserPrivateKey(
-      credentialsId: 'ec2-ssh-key',
-      keyFileVariable: 'SSH_KEY',
-      usernameVariable: 'SSH_USER'
-    )]) {
-      sh """
-        set -e
-        cd ${ANS_DIR}
-        export ANSIBLE_HOST_KEY_CHECKING=False
-        ansible-playbook -i inventories/hosts.ini playbooks/05-prometheus-targets.yml --private-key \$SSH_KEY -u \$SSH_USER
-      """
+    //////////////////////////////
+    stage('Update Prometheus Targets') {
+      when { expression { params.ACTION == 'apply' && env.DO_ANSIBLE == 'true' } }
+      steps {
+        withCredentials([sshUserPrivateKey(
+          credentialsId: 'ec2-ssh-key',
+          keyFileVariable: 'SSH_KEY',
+          usernameVariable: 'SSH_USER'
+        )]) {
+          sh """
+            set -e
+            cd ${ANS_DIR}
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            ansible-playbook -i inventories/hosts.ini playbooks/05-prometheus-targets.yml --private-key \$SSH_KEY -u \$SSH_USER
+          """
+          }
+      }
     }
-  }
-}
 
 
     // -------------------------
@@ -344,38 +344,38 @@ stage('Update Prometheus Targets') {
     // Fetch kubeconfig
     // -------------------------
     stage('Fetch kubeconfig') {
-  steps {
-    withCredentials([sshUserPrivateKey(
-      credentialsId: 'ec2-ssh-key',
-      keyFileVariable: 'SSH_KEY',
-      usernameVariable: 'SSH_USER'
-    )]) {
+      steps {
+        withCredentials([sshUserPrivateKey(
+          credentialsId: 'ec2-ssh-key',
+          keyFileVariable: 'SSH_KEY',
+          usernameVariable: 'SSH_USER'
+        )]) {
 
-      sh '''
-      set -e
+        sh '''
+          set -e
 
-      MASTER_PUBLIC_IP="13.201.31.174"
+          MASTER_PUBLIC_IP="13.201.31.174"
 
-      mkdir -p "$HOME/.kube"
+          mkdir -p "$HOME/.kube"
 
-      scp -o StrictHostKeyChecking=no -i "$SSH_KEY" \
-        $SSH_USER@${MASTER_PUBLIC_IP}:/home/$SSH_USER/.kube/config \
-        "$HOME/.kube/config"
+          scp -o StrictHostKeyChecking=no -i "$SSH_KEY" \
+            $SSH_USER@${MASTER_PUBLIC_IP}:/home/$SSH_USER/.kube/config \
+            "$HOME/.kube/config"
 
-      # Force kubeconfig to use PUBLIC API endpoint
-      sed -i "s#server: https://.*:6443#server: https://${MASTER_PUBLIC_IP}:6443#g" "$HOME/.kube/config"
+          # Force kubeconfig to use PUBLIC API endpoint
+          sed -i "s#server: https://.*:6443#server: https://${MASTER_PUBLIC_IP}:6443#g" "$HOME/.kube/config"
 
-      export KUBECONFIG="$HOME/.kube/config"
+          export KUBECONFIG="$HOME/.kube/config"
 
-      # ✅ LAB ONLY: disable TLS verification (fix SAN mismatch)
-      kubectl config set-cluster kubernetes --insecure-skip-tls-verify=true
-      kubectl config unset clusters.kubernetes.certificate-authority-data || true
+          # LAB ONLY: disable TLS verification (fix SAN mismatch)
+          kubectl config set-cluster kubernetes --insecure-skip-tls-verify=true
+          kubectl config unset clusters.kubernetes.certificate-authority-data || true
 
-      kubectl get nodes
-      '''
+          kubectl get nodes
+        '''
+        }
+      }
     }
-  }
-}
 
 
 
@@ -404,22 +404,21 @@ stage('Update Prometheus Targets') {
     }
     
     stage('Install NGINX Ingress Controller') {
-  when { expression { params.ACTION == 'apply' && !params.SKIP_DEPLOY } }
-  steps {
-    sh '''
-      set -e
-      export KUBECONFIG=$HOME/.kube/config
+      when { expression { params.ACTION == 'apply' && !params.SKIP_DEPLOY } }
+      steps {
+        sh '''
+          set -e
+          export KUBECONFIG=$HOME/.kube/config
 
-      kubectl get ns ingress-nginx >/dev/null 2>&1 || \
-        kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/baremetal/deploy.yaml
+          kubectl get ns ingress-nginx >/dev/null 2>&1 || \
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/baremetal/deploy.yaml
 
-      kubectl -n ingress-nginx wait --for=condition=Ready pod \
-        -l app.kubernetes.io/component=controller \
-        --timeout=180s
-    '''
-  }
-}
-
+          kubectl -n ingress-nginx wait --for=condition=Ready pod \
+          -l app.kubernetes.io/component=controller \
+          --timeout=180s
+        '''
+      }
+    }
   }
 
   post {
